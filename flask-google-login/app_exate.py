@@ -7,16 +7,22 @@ app = Flask(__name__)
 app.secret_key = '!secret'
 app.config.from_object('config')
 
-CONF_URL = 'https://accounts.google.com/.well-known/openid-configuration'
+#CONF_URL = 'https://accounts.google.com/.well-known/openid-configuration'
 oauth = OAuth(app)
 oauth.register(
-    name='google',
-    server_metadata_url=CONF_URL,
+    name='exate',
+    client_id='{{ your-github-client-id }}',
+    client_secret='{{ your-github-client-secret }}',
+    access_token_url='https://auth.dev.exate.co',
+    access_token_params=None,
+    authorize_url='https://auth.dev.exate.co/account/login',
+    authorize_params=None,
+    api_base_url='https://auth.dev.exate.co',
+    #server_metadata_url=CONF_URL,
     client_kwargs={
         'scope': 'openid email profile'
     }
 )
-
 
 @app.route('/')
 def homepage():
@@ -27,14 +33,20 @@ def homepage():
 @app.route('/login')
 def login():
     redirect_uri = url_for('auth', _external=True)
-    return oauth.google.authorize_redirect(redirect_uri)
+    return oauth.exate.authorize_redirect(redirect_uri)
 
 
 @app.route('/auth')
 def auth():
-    token = oauth.google.authorize_access_token()
-    user = oauth.google.parse_id_token(token)
+    token = oauth.exate.authorize_access_token()
+    user = oauth.exate.parse_id_token(token)
     session['user'] = user
+    return redirect('/')
+
+
+@app.route('/another_end')
+def another_end():
+    user = session.get('user')
     return redirect('/')
 
 
